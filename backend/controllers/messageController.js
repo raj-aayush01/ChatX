@@ -32,7 +32,33 @@ const sendMessage = async (req, res) => {
     }
 };
 
+const fetchMessages = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+
+        if(!chatId){
+            return res.status(400).json({
+                message: "Chat Id is required"
+            });
+        }
+
+        const messages = await Message.find({
+            chat: chatId
+        }).populate("sender" , "name")
+          .sort({createdAt: -1})
+          .limit(50);
+
+        return res.status(200).json(messages);
+
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
 
 module.exports = {
-    sendMessage
-}
+    sendMessage,
+    fetchMessages
+};

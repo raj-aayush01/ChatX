@@ -9,7 +9,6 @@ const messageRoutes = require("./routes/messageRoutes");
 
 dotenv.config() ;
 
-connectDB() ;
 const PORT = process.env.PORT || 3002 ;
 const app = express() ;
 
@@ -20,6 +19,18 @@ app.use("/api/users", userRoutes);
 app.use("/api/chats" , chatRoutes);
 app.use("/api/messages", messageRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server running on PORT: ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        await connectDB();
+
+        app.listen(PORT, () => {
+            console.log(`Server running on PORT: ${PORT}`);
+        });
+
+    } catch (err) {
+        console.error("Failed to connect to DB:", err.message);
+        process.exit(1);
+    }
+};
+
+startServer();
