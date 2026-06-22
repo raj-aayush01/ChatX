@@ -1,16 +1,30 @@
 const express = require("express") ;
 const dotenv = require("dotenv") ;
 const connectDB = require("./config/db");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const initializeSocket = require("./sockets/socket");
+const { setIO } = require("./socket");
 
 dotenv.config() ;
 
 const PORT = process.env.PORT || 3002 ;
 const app = express() ;
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: "*" ,
+    },
+});
+setIO(io);
+
+initializeSocket(io);
 
 app.use(express.json());
 
@@ -23,7 +37,7 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, () => {
+        server.listen(PORT, () => {
             console.log(`Server running on PORT: ${PORT}`);
         });
 

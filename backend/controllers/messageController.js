@@ -1,5 +1,6 @@
 const Message = require("../models/Message");
 const Chat = require("../models/Chat");
+const { getIO } = require("../socket");
 
 const sendMessage = async (req, res) => {
     try {
@@ -16,12 +17,16 @@ const sendMessage = async (req, res) => {
             chat: chatId
         });
 
+        const io = getIO();
+
         await Chat.findByIdAndUpdate(
             chatId,
             {
                 latestMessage: message._id
             }
         );
+
+        io.to(chatId).emit("message received", message);
 
         return res.status(201).json(message);
 
