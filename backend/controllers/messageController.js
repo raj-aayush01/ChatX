@@ -17,6 +17,8 @@ const sendMessage = async (req, res) => {
             chat: chatId
         });
 
+        const populatedMessage = await Message.findById(message._id).populate("sender", "name");
+
         const io = getIO();
 
         await Chat.findByIdAndUpdate(
@@ -26,9 +28,9 @@ const sendMessage = async (req, res) => {
             }
         );
 
-        io.to(chatId).emit("message received", message);
+        io.to(chatId).emit("message received", populatedMessage);
 
-        return res.status(201).json(message);
+        return res.status(201).json(populatedMessage);
 
     } catch ( err ){
         return res.status(500).json({
@@ -50,7 +52,7 @@ const fetchMessages = async (req, res) => {
         const messages = await Message.find({
             chat: chatId
         }).populate("sender" , "name")
-          .sort({createdAt: -1})
+          .sort({createdAt: 1})
           .limit(50);
 
         return res.status(200).json(messages);

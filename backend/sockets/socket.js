@@ -1,3 +1,5 @@
+const onlineUsers = new Map();
+
 const initializeSocket = (io) => {
     io.on("connection", (socket) => {
         console.log("New socket connected: ", socket.id);
@@ -7,8 +9,43 @@ const initializeSocket = (io) => {
 
             socket.join(userId);
 
+            onlineUsers.set(userId, socket.id);
+
+            io.emit(
+                "user online",
+                userId
+            );
+
             console.log(`Socket ${socket.id} joined room ${userId}`);
+
             socket.emit("connected");
+        });
+        
+
+        socket.on("disconnect", () => {
+            let disconnectedUser = null;
+
+            for (const [userId, socketId] of onlineUsers) {
+                if (socketId === socket.id) {
+                    disconnectedUser = userId;
+                    break;
+                }
+            }
+
+            if (disconnectedUser) {
+                onlineUsers.delete(
+                    disconnectedUser
+                );
+
+                io.emit(
+                    "user offline",
+                    disconnectedUser
+                );
+
+                console.log(
+                    `User ${disconnectedUser} went offline`
+                );
+            }
         });
 
         socket.on("join chat", (chatId) => {

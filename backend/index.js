@@ -3,6 +3,7 @@ const dotenv = require("dotenv") ;
 const connectDB = require("./config/db");
 const http = require("http");
 const { Server } = require("socket.io");
+const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -26,6 +27,7 @@ setIO(io);
 
 initializeSocket(io);
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);

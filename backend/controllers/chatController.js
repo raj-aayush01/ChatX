@@ -41,7 +41,8 @@ const fetchChats = async (req, res) => {
             users: {
                 $in: [req.user.id]
             }
-        }).populate("users" , "-password");
+        }).populate("users" , "-password")
+          .populate("latestMessage");
 
         return res.status(200).json(chats);
 
