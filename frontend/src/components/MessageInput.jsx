@@ -1,10 +1,6 @@
 import "./MessageInput.css";
 
-const MessageInput = ({
-    input,
-    setInput,
-    handleSend,
-}) => {
+const MessageInput = ({ input, handleInputChange, handleSend, }) => {
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
             handleSend();
@@ -18,16 +14,11 @@ const MessageInput = ({
                 type="text"
                 placeholder="Type a message..."
                 value={input}
-                onChange={(e) =>
-                    setInput(e.target.value)
-                }
+                onChange={ handleInputChange }
                 onKeyDown={handleKeyDown}
             />
 
-            <button
-                className="send-btn"
-                onClick={handleSend}
-            >
+            <button className="send-btn" onClick={handleSend}>
                 Send
             </button>
         </div>

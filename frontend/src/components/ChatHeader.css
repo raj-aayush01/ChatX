@@ -3,61 +3,85 @@
     align-items: center;
     gap: 12px;
     padding: 16px 24px;
-    background-color: #111827;
-    border-bottom: 1px solid #374151;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    position: relative;
+    z-index: 1;
 }
 
 .chat-header-avatar {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background-color: #2563eb;
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 700;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
 }
 
 .chat-header-info {
     display: flex;
     flex-direction: column;
+    gap: 3px;
 }
 
 .chat-header-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #f9fafb;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.2px;
 }
 
 .chat-header-status {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 400;
 }
 
 .chat-header-status::before {
     content: "";
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .chat-header-status.online {
-    color: #10b981;
+    color: rgba(16, 185, 129, 0.9);
 }
 
 .chat-header-status.online::before {
     background-color: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
 }
 
 .chat-header-status.offline {
-    color: #9ca3af;
+    color: rgba(255, 255, 255, 0.22);
 }
 
 .chat-header-status.offline::before {
-    background-color: #9ca3af;
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+.chat-header-status.typing {
+    color: rgba(255, 255, 255, 0.45);
+    font-style: italic;
+}
+
+.chat-header-status.typing::before {
+    background-color: rgba(255, 255, 255, 0.35);
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }

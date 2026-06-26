@@ -3,6 +3,7 @@ import "./ChatHeader.css";
 const ChatHeader = ({
     selectedUser,
     isOnline,
+    isTyping,
 }) => {
     return (
         <div className="chat-header">
@@ -19,12 +20,16 @@ const ChatHeader = ({
 
                 <span
                     className={`chat-header-status ${
-                        isOnline
+                        isTyping
+                            ? "typing"
+                            : isOnline
                             ? "online"
                             : "offline"
                     }`}
                 >
-                    {isOnline
+                    {isTyping
+                        ? "Typing..."
+                        : isOnline
                         ? "Online"
                         : "Offline"}
                 </span>

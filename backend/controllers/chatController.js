@@ -15,7 +15,9 @@ const accessChat = async (req, res) => {
             users: {
                 $all: [req.user.id, userId]
             }
-        });
+        })
+        .populate("users", "-password")
+        .populate("latestMessage");
 
         if(existingChat){
             return res.status(200).json(existingChat)
@@ -26,7 +28,11 @@ const accessChat = async (req, res) => {
             users: [req.user.id, userId]
         });
 
-        return res.status(201).json(newChat);
+        const fullChat = await Chat.findById(newChat._id)
+            .populate("users", "-password")
+            .populate("latestMessage");
+
+        return res.status(201).json(fullChat);
 
     } catch ( err ){
         res.status(500).json({

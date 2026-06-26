@@ -57,6 +57,14 @@ const initializeSocket = (io) => {
         socket.on("new message", (message) => {
             console.log("New message received:", message);
         });
+
+        socket.on("typing", (chatId) => {
+            socket.to(chatId).emit("typing");
+        });
+
+        socket.on("stop typing", (chatId) => {
+            socket.to(chatId).emit("stop typing");
+        });
     });
 };
 
