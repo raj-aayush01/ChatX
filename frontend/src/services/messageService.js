@@ -13,3 +13,8 @@ export const sendMessage = async (content, chatId) => {
 
     return response.data;
 };
+
+export const deleteMessageApi = async (messageId) => {
+    const response = await api.delete(`/messages/${messageId}`);
+    return response.data;
+};

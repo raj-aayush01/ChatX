@@ -65,7 +65,35 @@ const fetchMessages = async (req, res) => {
 }
 
 
+const deleteMessage = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found" });
+        }
+
+        const chatId = message.chat;
+        await Message.findByIdAndDelete(messageId);
+
+        try {
+            const io = getIO();
+            if (io) {
+                io.to(chatId.toString()).emit("message deleted", { messageId, chatId });
+            }
+        } catch (e) {
+            // Socket IO broadcast optional if socket not initialized in test mode
+        }
+
+        return res.status(200).json({ success: true, message: "Message deleted", messageId, chatId });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     sendMessage,
-    fetchMessages
+    fetchMessages,
+    deleteMessage
 };

@@ -9,6 +9,7 @@ const ChatSidebar = ({
     handleUserSelect,
     setSelectedChat,
     selectedChat,
+    onLogout
 }) => {
     return (
         <div className="chat-sidebar">
@@ -55,7 +56,7 @@ const ChatSidebar = ({
                 <div className="user-list">
                     {chats.map((chat) => {
                         const otherUser = chat.users.find(
-                            (user) => user._id !== currentUser._id
+                            (user) => user._id !== currentUser?._id
                         );
                         const isActive = selectedChat?._id === chat._id;
 
@@ -79,6 +80,33 @@ const ChatSidebar = ({
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {currentUser && (
+                <div className="sidebar-footer">
+                    <div className="current-user-info">
+                        <div className="current-user-avatar">
+                            {currentUser.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="current-user-details">
+                            <span className="current-user-name">{currentUser.name}</span>
+                            <span className="current-user-email">{currentUser.email}</span>
+                        </div>
+                    </div>
+                    {onLogout && (
+                        <button
+                            className="logout-btn"
+                            title="Log Out"
+                            onClick={onLogout}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    )}
                 </div>
             )}
         </div>

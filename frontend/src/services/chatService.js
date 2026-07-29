@@ -12,3 +12,8 @@ export const accessChat = async (userId) => {
 
     return response.data;
 };
+
+export const deleteChatApi = async (chatId) => {
+    const response = await api.delete(`/chats/${chatId}`);
+    return response.data;
+};

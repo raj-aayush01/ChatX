@@ -65,6 +65,14 @@ const initializeSocket = (io) => {
         socket.on("stop typing", (chatId) => {
             socket.to(chatId).emit("stop typing");
         });
+
+        socket.on("delete message", ({ messageId, chatId }) => {
+            socket.to(chatId).emit("message deleted", { messageId, chatId });
+        });
+
+        socket.on("delete chat", (chatId) => {
+            socket.to(chatId).emit("chat deleted", chatId);
+        });
     });
 };
 

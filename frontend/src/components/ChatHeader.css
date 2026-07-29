@@ -1,6 +1,7 @@
 .chat-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     padding: 16px 24px;
     background: rgba(0, 0, 0, 0.55);
@@ -9,6 +10,12 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     position: relative;
     z-index: 1;
+}
+
+.chat-header-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .chat-header-avatar {
@@ -71,17 +78,46 @@
     background-color: rgba(255, 255, 255, 0.18);
 }
 
+/* Green Typing Indicator */
 .chat-header-status.typing {
-    color: rgba(255, 255, 255, 0.45);
-    font-style: italic;
+    color: #22c55e;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
 
 .chat-header-status.typing::before {
-    background-color: rgba(255, 255, 255, 0.35);
-    animation: pulse 1.2s ease-in-out infinite;
+    background-color: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: scale(1.05);
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
 }

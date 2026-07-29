@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ChatPage.css";
 
 import ChatSidebar from "../components/ChatSidebar";
@@ -6,13 +7,15 @@ import ChatHeader from "../components/ChatHeader";
 import MessageList from "../components/MessageList";
 import MessageInput from "../components/MessageInput";
 
-import { fetchChats, accessChat } from "../services/chatService";
-import { fetchMessages, sendMessage } from "../services/messageService";
+import { fetchChats, accessChat, deleteChatApi } from "../services/chatService";
+import { fetchMessages, sendMessage, deleteMessageApi } from "../services/messageService";
 import { searchUsers } from "../services/userService";
+import { logoutApi } from "../services/authService";
 
 import socket from "../socket/socket";
 
 const ChatPage = () => {
+    const navigate = useNavigate();
     const currentUser = JSON.parse(
         localStorage.getItem("user")
     );
@@ -28,103 +31,91 @@ const ChatPage = () => {
     const [searchResults, setSearchResults] = useState([]);
 
     const typingTimeoutRef = useRef(null);
-    
 
     useEffect(() => {
         const loadChats = async () => {
             try {
                 const data = await fetchChats();
                 setChats(data);
-                console.log("Chats State:", data);
-
             } catch (err) {
                 console.error(err);
             }
         };
         loadChats();
-
     }, []);
 
-
     useEffect(() => {
-        socket.emit( "setup", currentUser._id );
+        if (!currentUser?._id) return;
+        socket.emit("setup", currentUser._id);
 
-        socket.on( "connected", () => {
+        socket.on("connected", () => {
             console.log("Socket Connected");
         });
 
         return () => {
             socket.off("connected");
         };
-
     }, [currentUser]);
-
 
     useEffect(() => {
         socket.on("message received", (newMessage) => {
-            if ( newMessage.sender?._id === currentUser._id ) return;
+            if (newMessage.sender?._id === currentUser?._id) return;
 
-            setMessages((prev) => [
-                    ...prev,
-                    newMessage,
-                ]);
+            setMessages((prev) => [...prev, newMessage]);
+        });
+
+        socket.on("message deleted", ({ messageId }) => {
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        });
+
+        socket.on("chat deleted", (chatId) => {
+            setChats((prev) => prev.filter((c) => c._id !== chatId));
+            if (selectedChat?._id === chatId) {
+                setSelectedChat(null);
+                setMessages([]);
+            }
         });
 
         return () => {
             socket.off("message received");
+            socket.off("message deleted");
+            socket.off("chat deleted");
         };
-
-    }, [currentUser]);
-
+    }, [currentUser, selectedChat]);
 
     useEffect(() => {
         socket.on("user online", (userId) => {
             setOnlineUsers((prev) => {
-                if ( prev.includes(userId) ) return prev;
-
-                return [
-                    ...prev,
-                    userId,
-                ];
+                if (prev.includes(userId)) return prev;
+                return [...prev, userId];
             });
         });
 
         socket.on("user offline", (userId) => {
-            setOnlineUsers((prev) =>
-                prev.filter( (id) => id !== userId )
-            );
+            setOnlineUsers((prev) => prev.filter((id) => id !== userId));
         });
 
         return () => {
             socket.off("user online");
             socket.off("user offline");
         };
-
     }, []);
-
 
     useEffect(() => {
         if (!selectedChat) return;
 
         const loadMessages = async () => {
             try {
-                const data = await fetchMessages( selectedChat._id );
-
-                console.log("Messages:", data );
-
+                const data = await fetchMessages(selectedChat._id);
                 setMessages(data);
-
                 socket.emit("join chat", selectedChat._id);
-
             } catch (err) {
                 console.error(err);
             }
         };
 
         loadMessages();
-
     }, [selectedChat]);
-
 
     useEffect(() => {
         socket.on("typing", () => {
@@ -139,9 +130,7 @@ const ChatPage = () => {
             socket.off("typing");
             socket.off("stop typing");
         };
-
     }, []);
-
 
     useEffect(() => {
         return () => {
@@ -150,7 +139,6 @@ const ChatPage = () => {
             }
         };
     }, []);
-
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
@@ -185,20 +173,13 @@ const ChatPage = () => {
         }
 
         try {
-            const newMessage = await sendMessage(
-                input,
-                selectedChat._id
-            );
-
+            const newMessage = await sendMessage(input, selectedChat._id);
             setMessages((prev) => [...prev, newMessage]);
-
             setInput("");
-
         } catch (err) {
             console.error(err);
         }
     };
-
 
     const handleSearch = async (value) => {
         setSearch(value);
@@ -216,41 +197,70 @@ const ChatPage = () => {
         }
     };
 
-
     const handleUserSelect = async (user) => {
         try {
             const chat = await accessChat(user._id);
-
             setSelectedChat(chat);
 
             setChats((prevChats) => {
-                const exists = prevChats.find(
-                    (c) => c._id === chat._id
-                );
-
+                const exists = prevChats.find((c) => c._id === chat._id);
                 if (exists) return prevChats;
-
                 return [chat, ...prevChats];
             });
 
             setSearch("");
             setSearchResults([]);
-
         } catch (err) {
             console.error(err);
         }
     };
 
+    const handleDeleteChat = async () => {
+        if (!selectedChat) return;
+        const confirmDelete = window.confirm("Are you sure you want to delete this conversation?");
+        if (!confirmDelete) return;
 
-    const selectedUser = selectedChat?.users?.find( (user) => user._id !== currentUser._id );
-    const isOnline = selectedUser && onlineUsers.includes( selectedUser._id );
+        try {
+            await deleteChatApi(selectedChat._id);
+            socket.emit("delete chat", selectedChat._id);
 
-    console.log("Chats:", chats);
-    console.log("FIRST CHAT:", chats[0]);
+            setChats((prev) => prev.filter((c) => c._id !== selectedChat._id));
+            setSelectedChat(null);
+            setMessages([]);
+        } catch (err) {
+            console.error("Failed to delete chat:", err);
+        }
+    };
+
+    const handleDeleteMessage = async (messageId) => {
+        try {
+            await deleteMessageApi(messageId);
+            if (selectedChat) {
+                socket.emit("delete message", { messageId, chatId: selectedChat._id });
+            }
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        } catch (err) {
+            console.error("Failed to delete message:", err);
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logoutApi();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
+        }
+    };
+
+    const selectedUser = selectedChat?.users?.find((user) => user._id !== currentUser?._id);
+    const isOnline = selectedUser && onlineUsers.includes(selectedUser._id);
 
     return (
         <div className="chat-wrapper">
-
             <div className="chat-orb-right" />
 
             <ChatSidebar
@@ -262,37 +272,34 @@ const ChatPage = () => {
                 handleUserSelect={handleUserSelect}
                 setSelectedChat={setSelectedChat}
                 selectedChat={selectedChat}
+                onLogout={handleLogout}
             />
 
             <div className="chat-main">
                 {selectedChat ? (
                     <>
                         <ChatHeader
-                            selectedUser={ selectedUser }
-                            isOnline={ isOnline }
-                            isTyping={ isTyping }
+                            selectedUser={selectedUser}
+                            isOnline={isOnline}
+                            isTyping={isTyping}
+                            onDeleteChat={handleDeleteChat}
                         />
 
                         <MessageList
                             messages={messages}
-                            currentUser={
-                                currentUser
-                            }
+                            currentUser={currentUser}
+                            onDeleteMessage={handleDeleteMessage}
                         />
 
                         <MessageInput
                             input={input}
                             handleInputChange={handleInputChange}
-                            handleSend={ handleSend }
+                            handleSend={handleSend}
                         />
                     </>
                 ) : (
                     <div className="chat-empty">
-                        <p>
-                            Select a
-                            conversation to
-                            start chatting
-                        </p>
+                        <p>Select a conversation to start chatting</p>
                     </div>
                 )}
             </div>

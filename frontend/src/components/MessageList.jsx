@@ -5,6 +5,7 @@ import MessageBubble from "./MessageBubble";
 const MessageList = ({
     messages,
     currentUser,
+    onDeleteMessage
 }) => {
 
     const messagesEndRef = useRef(null);
@@ -20,13 +21,14 @@ const MessageList = ({
             {messages.map((msg) => {
                 const isMine =
                     msg.sender?._id ===
-                    currentUser._id;
+                    currentUser?._id;
 
                 return (
                     <MessageBubble
                         key={msg._id}
                         msg={msg}
                         isMine={isMine}
+                        onDeleteMessage={isMine ? onDeleteMessage : null}
                     />
                 );
             })}

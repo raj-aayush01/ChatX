@@ -5,10 +5,41 @@
     flex-direction: column;
     gap: 2px;
     transition: transform 0.15s ease;
+    position: relative;
 }
 
 .message-bubble:hover {
     transform: translateY(-1px);
+}
+
+.message-content-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.msg-delete-btn {
+    opacity: 0;
+    background: transparent;
+    border: none;
+    color: rgba(239, 68, 68, 0.7);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-bubble:hover .msg-delete-btn {
+    opacity: 1;
+}
+
+.msg-delete-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.2);
 }
 
 .message-bubble.received {
@@ -44,6 +75,7 @@
     margin: 0;
     line-height: 1.5;
     word-break: break-word;
+    flex: 1;
 }
 
 .message-bubble.received .message-text {
@@ -65,7 +97,6 @@
 .message-bubble.sent .message-time {
     color: rgba(255, 255, 255, 0.38);
 }
-
 
 @media (min-width: 1280px) {
     .message-bubble {
